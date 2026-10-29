@@ -1,12 +1,14 @@
-"""Record one real run and build site/: the dashboard as a static page that replays it (no server, no API key).
+"""Record one real run and build docs/: the dashboard as a static page that replays it (no server, no API key).
 
-python scripts/make_replay.py      (agents running: python -m ap_agents.serve)
-Then publish site/ on any static host (GitHub Pages, Cloudflare Pages...).
+python scripts/make_replay.py            (agents running: python -m ap_agents.serve)
+python scripts/make_replay.py --rebuild  (reuse the run already in docs/, e.g. after a dashboard change)
+GitHub Pages serves docs/ directly (Settings > Pages > main /docs); any static host works.
 """
 
 import asyncio
 import json
 import os
+import re
 import shutil
 import sys
 from datetime import datetime
@@ -17,7 +19,7 @@ from ap_agents.agent import agent_url  # noqa: E402
 from ap_agents.config import DATA, ROOT, STATE, load_config  # noqa: E402
 from ap_agents.run import process  # noqa: E402
 
-SITE = ROOT / "site"
+SITE = ROOT / "docs"
 
 # Stands in for the dashboard's /api/*: each invoice replays its recorded timeline from the moment it is started,
 # and the human actions (approve, send, discard) work in the visitor's browser.
@@ -93,6 +95,61 @@ SHIM = r"""
 </script>
 """
 
+INTRO = """
+<style>
+  .intro { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px;
+           background: rgba(0,0,0,.38); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .intro[hidden] { display: none; }
+  .intro .sheet { background: var(--surface); color: var(--text); border-radius: 22px; max-width: 560px; width: 100%;
+                  max-height: calc(100vh - 32px); overflow: auto; padding: 32px 32px 26px; box-shadow: 0 30px 80px rgba(0,0,0,.3); }
+  .intro .kicker { font-size: 13px; font-weight: 600; color: var(--accent); margin: 0 0 8px; }
+  .intro h2 { font-size: 28px; line-height: 1.15; letter-spacing: -.025em; margin: 0 0 12px; }
+  .intro p { font-size: 15px; line-height: 1.5; color: var(--secondary); margin: 0 0 18px; }
+  .intro ul { list-style: none; padding: 0; margin: 0 0 20px; display: grid; gap: 10px; }
+  .intro li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; font-size: 14.5px; line-height: 1.45; }
+  .intro li b { color: var(--text); font-weight: 600; }
+  .intro li i { font-style: normal; color: var(--green); font-weight: 700; }
+  .intro .fine { font-size: 12.5px; color: var(--tertiary); margin: 0 0 22px; }
+  .intro .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .intro .actions .btn { flex: 1; min-width: 160px; padding: 12px 18px; font-size: 15px; }
+  .help { position: fixed; right: 20px; bottom: 20px; z-index: 40; width: 40px; height: 40px; border-radius: 50%;
+          border: 1px solid var(--hairline); background: var(--surface); color: var(--secondary); font-size: 17px; font-weight: 600;
+          box-shadow: 0 6px 20px rgba(0,0,0,.12); cursor: pointer; }
+  @media (max-width: 560px) { .intro .sheet { padding: 24px 20px 20px; } .intro h2 { font-size: 23px; } }
+</style>
+<div class="intro" id="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+  <div class="sheet">
+    <div class="kicker">Démo · comptabilité fournisseurs</div>
+    <h2 id="intro-title">Vos factures fournisseurs contrôlées en une vingtaine de secondes.</h2>
+    <p>Cinq agents IA traitent 12 factures comme le ferait votre service comptable : ils lisent le PDF, le rapprochent du bon de commande
+       et du bon de livraison, vérifient le fournisseur, puis préparent le paiement ou le courrier.</p>
+    <ul>
+      <li><i>✓</i><span><b>Fraude au changement de RIB</b> : l'IBAN de la facture ne correspond pas au fournisseur, le paiement est bloqué.</span></li>
+      <li><i>✓</i><span><b>Doublons et surfacturations</b> : relance déjà payée, prix au-dessus de la commande, quantité non livrée.</span></li>
+      <li><i>✓</i><span><b>Faux fournisseurs</b> : SIRET inconnu, n° de TVA incohérent, et même une facture qui tente de manipuler l'IA.</span></li>
+      <li><i>✓</i><span><b>Vous gardez la main</b> : aucun paiement ni email ne part sans votre validation, chaque étape est tracée.</span></li>
+    </ul>
+    <p class="fine">Rediffusion d'une exécution réelle. Données fictives. Conçu pour le RGPD et l'AI Act : modèle au choix (Mistral, Qwen, DeepSeek hébergé en UE), journal d'audit complet.</p>
+    <div class="actions">
+      <button class="btn primary" id="intro-go">Lancer l'analyse</button>
+      <button class="btn" id="intro-close">Explorer d'abord</button>
+    </div>
+  </div>
+</div>
+<button class="help" id="help" title="À propos de cette démo" aria-label="À propos de cette démo">?</button>
+<script>
+(() => {
+  const box = document.getElementById("intro");
+  const close = () => box.hidden = true;
+  document.getElementById("intro-close").onclick = close;
+  document.getElementById("intro-go").onclick = () => { close(); document.getElementById("run").click(); };
+  document.getElementById("help").onclick = () => box.hidden = false;
+  box.onclick = e => { if (e.target === box) close(); };
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !box.hidden) { e.stopImmediatePropagation(); close(); } }, true);
+})();
+</script>
+"""
+
 
 async def record(files: list[str]) -> dict:
     cfg = load_config()
@@ -134,13 +191,19 @@ def build(rec: dict) -> None:
     html = (ROOT / "src/ap_agents/dashboard.html").read_text()
     html = html.replace('href="/inbox/', 'href="inbox/')  # relative, so the site works under any sub-path
     shim = SHIM.replace("__RECORDING__", json.dumps(rec, ensure_ascii=False).replace("</", "<\\/"))
-    html = html.replace("<script>", shim + "<script>", 1)
+    html = html.replace("<script>", shim + "<script>", 1).replace("</body>", INTRO + "</body>", 1)
     (SITE / "index.html").write_text(html)
+
+
+def recorded() -> dict:
+    """The run embedded in the page already built."""
+    page = (SITE / "index.html").read_text()
+    return json.loads(re.search(r"const R = (\{.*?\}), ms =", page, re.S).group(1).replace("<\\/", "</"))
 
 
 if __name__ == "__main__":
     files = sorted(p.name for p in (DATA / "inbox").glob("*.pdf"))
-    rec = asyncio.run(record(files))
+    rec = recorded() if "--rebuild" in sys.argv else asyncio.run(record(files))
     build(rec)
     bad = [f for f, o in rec["outcomes"].items() if "decision" not in o["outcome"]]
-    print(f"site/ built from a run of {len(files)} invoices ({len(bad)} errors: {bad or 'none'})")
+    print(f"docs/ built from {'the existing' if '--rebuild' in sys.argv else 'a new'} run of {len(files)} invoices ({len(bad)} errors: {bad or 'none'})")

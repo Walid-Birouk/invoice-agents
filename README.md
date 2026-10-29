@@ -68,5 +68,5 @@ python scripts/make_demo_data.py          # optional: regenerate data/
 python -m ap_agents.serve                 # terminal 1: start the agents
 python -m ap_agents.dashboard             # terminal 2: http://127.0.0.1:8080
 python -m ap_agents.run --runs 3          # or: process the inbox and score against data/expected.json
-python scripts/make_replay.py             # build site/, a static replay of a real run
+python scripts/make_replay.py             # build docs/, a static replay of a real run (GitHub Pages)
 ```
