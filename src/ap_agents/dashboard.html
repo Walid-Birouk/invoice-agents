@@ -143,7 +143,11 @@
   .step > details[open] > summary .chev { transform: rotate(90deg); }
   body.wide .wrap { grid-template-columns: minmax(0, 860px); justify-content: center; }
   body.wide .wrap > div:first-child { display: none; }
-  body.wide .inspector { position: static; max-height: none; padding: 36px 40px; }
+  body.wide .inspector { position: static; max-height: none; overflow: visible; padding: 36px 40px; }
+  .back { position: sticky; top: 68px; z-index: 5; display: inline-flex; align-items: center; gap: 6px; margin: -8px 0 18px -6px;
+          padding: 7px 14px 7px 10px; border-radius: 980px; border: 1px solid var(--hairline); background: var(--surface);
+          color: var(--accent); font-size: 14px; font-weight: 500; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+  .back:hover { background: var(--accent-soft); }
   body.wide .inspector .big { font-size: 44px; }
   .steps { list-style: none; margin: 0; padding: 0; }
   .step { display: grid; grid-template-columns: 26px 1fr; gap: 12px; position: relative; padding-bottom: 18px; }
@@ -379,7 +383,7 @@ function renderInspector() {
       e.kind === "tool_call" ? esc(e.tool) : e.kind === "task" ? "reçoit la tâche" : e.kind === "answer" ? "répond" : "garde-fou : " + esc(e.problem || e.reason)}</span></li>`).join("");
 
   const wide = document.body.classList.contains("wide");
-  const html = `<div class="head"><div><h2>${esc(v ? v.name : inv.file)}</h2>
+  const html = `${wide ? `<button class="back" onclick="toggleWide()">${svg('<path d="M15 6l-6 6 6 6"/>', 16)}Toutes les factures</button>` : ""}<div class="head"><div><h2>${esc(v ? v.name : inv.file)}</h2>
     <div class="meta">${o.invoice_number ? esc(o.invoice_number) + " · " : ""}<a href="/inbox/${encodeURIComponent(inv.file)}" target="_blank">Ouvrir le PDF</a></div></div>
     <button class="icon-btn" onclick="toggleWide()" title="${wide ? "Réduire (Échap)" : "Agrandir"}" aria-label="${wide ? "Réduire" : "Agrandir"}">${svg(wide ? '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>' : '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', 16)}</button></div>
     ${o.amount_ttc ? `<div class="big">${eur(o.amount_ttc)}</div>` : `<div style="height:18px"></div>`}
@@ -472,6 +476,7 @@ document.getElementById("inspector").addEventListener("toggle", e => {
 }, true);
 document.getElementById("filters").onclick = e => {
   if (!e.target.dataset.f) return;
+  if (document.body.classList.contains("wide")) toggleWide();
   filter = e.target.dataset.f;
   document.querySelectorAll("#filters button").forEach(b => b.classList.toggle("on", b === e.target));
   render();

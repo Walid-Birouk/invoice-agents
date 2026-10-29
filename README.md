@@ -4,14 +4,23 @@ Multi-agent system that processes supplier invoices end to end, built on MCP (ag
 
 ## What it does
 
-PDF invoices arrive in an inbox. For each one, the agents:
+Live demo: https://walid-birouk.github.io/invoice-agents/
 
-1. Extract the invoice data (number, supplier, lines, totals, VAT, IBAN, PO number).
-2. Three-way match it against the purchase order and the delivery receipt.
-3. Check the supplier: known SIRET, VAT number, verified IBAN, duplicate invoices.
-4. Decide: **approve** (queue the payment), **hold** (draft an email to the supplier) or **escalate** (draft an alert to finance).
+```mermaid
+flowchart LR
+  pdf[PDF invoice] --> ext[Extractor<br/>reads the invoice]
+  ext --> match[Matcher<br/>PO and delivery receipt]
+  match --> val[Validator<br/>supplier, IBAN, duplicates]
+  val --> dec{Coordinator<br/>decision policy}
+  dec -->|approve| pay[Payment queued]
+  dec -->|hold| sup[Email draft to supplier]
+  dec -->|escalate| fin[Alert draft to finance]
+  pay --> human([Human review on the dashboard])
+  sup --> human
+  fin --> human
+```
 
-A human approves every payment and reviews every email draft on the dashboard. Nothing is paid or sent automatically.
+The coordinator delegates each step to an agent over A2A; agents reach the inbox, ERP and mail through MCP. Nothing is paid or sent until a human approves it.
 
 ## Agents
 
