@@ -1,0 +1,115 @@
+[
+  {
+    "file": "01_papeterie_lumiere.pdf",
+    "invoice_number": "FA-2026-0912",
+    "vendor_id": "V001",
+    "total_ttc": "905.40",
+    "decision": "approve",
+    "finding_codes": []
+  },
+  {
+    "file": "02_netcloud.pdf",
+    "invoice_number": "NC-2026-10-4471",
+    "vendor_id": "V002",
+    "total_ttc": "362.40",
+    "decision": "approve",
+    "finding_codes": []
+  },
+  {
+    "file": "03_papeterie_lumiere_relance.pdf",
+    "invoice_number": "FA-2026-0877",
+    "vendor_id": "V001",
+    "total_ttc": "1273.20",
+    "decision": "escalate",
+    "finding_codes": [
+      "duplicate"
+    ]
+  },
+  {
+    "file": "04_transalpes.pdf",
+    "invoice_number": "TAL-26-10418",
+    "vendor_id": "V003",
+    "total_ttc": "2208.00",
+    "decision": "hold",
+    "finding_codes": [
+      "price_mismatch"
+    ]
+  },
+  {
+    "file": "05_imprimerie_rhone.pdf",
+    "invoice_number": "IR-2026-1187",
+    "vendor_id": "V004",
+    "total_ttc": "849.60",
+    "decision": "hold",
+    "finding_codes": [
+      "qty_mismatch"
+    ]
+  },
+  {
+    "file": "06_bellecour_cafe.pdf",
+    "invoice_number": "BCF-26-0391",
+    "vendor_id": "V005",
+    "total_ttc": "579.83",
+    "decision": "escalate",
+    "finding_codes": [
+      "iban_change"
+    ]
+  },
+  {
+    "file": "07_netcloud_novembre.pdf",
+    "invoice_number": "NC-2026-11-0152",
+    "vendor_id": "V002",
+    "total_ttc": "503.88",
+    "decision": "approve",
+    "finding_codes": []
+  },
+  {
+    "file": "08_imprimerie_rhone_cartes.pdf",
+    "invoice_number": "IR-2026-1214",
+    "vendor_id": "V004",
+    "total_ttc": "724.40",
+    "decision": "hold",
+    "finding_codes": [
+      "totals_mismatch"
+    ]
+  },
+  {
+    "file": "09_lyon_services_pro.pdf",
+    "invoice_number": "LSP-2026-0047",
+    "vendor_id": null,
+    "total_ttc": "1776.00",
+    "decision": "escalate",
+    "finding_codes": [
+      "no_po",
+      "unknown_vendor"
+    ]
+  },
+  {
+    "file": "10_transalpes_express.pdf",
+    "invoice_number": "TAL-26-10502",
+    "vendor_id": "V003",
+    "total_ttc": "462.00",
+    "decision": "hold",
+    "finding_codes": [
+      "no_po"
+    ]
+  },
+  {
+    "file": "11_papeterie_lumiere_novembre.pdf",
+    "invoice_number": "FA-2026-0951",
+    "vendor_id": "V001",
+    "total_ttc": "1018.80",
+    "decision": "hold",
+    "finding_codes": [
+      "price_mismatch"
+    ]
+  },
+  {
+    "file": "12_bellecour_cafe_novembre.pdf",
+    "invoice_number": "BCF-26-0418",
+    "vendor_id": "V005",
+    "total_ttc": "471.35",
+    "decision": "approve",
+    "finding_codes": []
+  }
+]

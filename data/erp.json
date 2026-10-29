@@ -1,0 +1,429 @@
+{
+  "buyer": {
+    "name": "Atelier Moreau SAS",
+    "siret": "41234567100025",
+    "address": "18 rue Mercière, 69002 Lyon"
+  },
+  "vendors": [
+    {
+      "id": "V001",
+      "name": "Papeterie Lumière SARL",
+      "siret": "50211874300017",
+      "vat_number": "FR76502118743",
+      "iban": "FR76 3000 4008 2100 0123 4567 849",
+      "email": "compta@papeterie-lumiere.example",
+      "payment_terms_days": 30
+    },
+    {
+      "id": "V002",
+      "name": "NetCloud Hébergement SAS",
+      "siret": "82345091600031",
+      "vat_number": "FR22823450916",
+      "iban": "FR76 1027 8073 0000 0204 5670 132",
+      "email": "facturation@netcloud.example",
+      "payment_terms_days": 30
+    },
+    {
+      "id": "V003",
+      "name": "TransAlpes Logistique SAS",
+      "siret": "79032145800024",
+      "vat_number": "FR79790321458",
+      "iban": "FR76 1780 6004 1004 5218 7300 084",
+      "email": "adv@transalpes.example",
+      "payment_terms_days": 30
+    },
+    {
+      "id": "V004",
+      "name": "Imprimerie du Rhône SARL",
+      "siret": "43398712000014",
+      "vat_number": "FR18433987120",
+      "iban": "FR76 1382 5002 0008 7765 4321 054",
+      "email": "contact@imprimerie-rhone.example",
+      "payment_terms_days": 30
+    },
+    {
+      "id": "V005",
+      "name": "Bellecour Fournitures Café SAS",
+      "siret": "88120455700014",
+      "vat_number": "FR30881204557",
+      "iban": "FR76 3000 3019 0000 0500 1234 510",
+      "email": "factures@bellecour-cafe.example",
+      "payment_terms_days": 30
+    }
+  ],
+  "purchase_orders": [
+    {
+      "number": "PO-2026-0388",
+      "vendor_id": "V001",
+      "issued": "2026-09-15",
+      "lines": [
+        {
+          "sku": "PAP-A4-80",
+          "description": "Ramettes papier A4 80 g (carton de 5)",
+          "quantity": "40",
+          "unit_price": "21.90"
+        },
+        {
+          "sku": "PAP-ENV-C5",
+          "description": "Enveloppes C5 (boîte de 500)",
+          "quantity": "10",
+          "unit_price": "18.50"
+        }
+      ]
+    },
+    {
+      "number": "PO-2026-0412",
+      "vendor_id": "V001",
+      "issued": "2026-09-29",
+      "lines": [
+        {
+          "sku": "PAP-A4-80",
+          "description": "Ramettes papier A4 80 g (carton de 5)",
+          "quantity": "25",
+          "unit_price": "21.90"
+        },
+        {
+          "sku": "PAP-CLASS-A4",
+          "description": "Classeurs à levier A4 dos 80 mm",
+          "quantity": "60",
+          "unit_price": "3.45"
+        }
+      ]
+    },
+    {
+      "number": "PO-2026-0418",
+      "vendor_id": "V002",
+      "issued": "2026-10-01",
+      "lines": [
+        {
+          "sku": "NC-VPS-L",
+          "description": "Serveur VPS L - octobre 2026",
+          "quantity": "3",
+          "unit_price": "89.00"
+        },
+        {
+          "sku": "NC-BACKUP",
+          "description": "Sauvegarde externalisée 500 Go - octobre 2026",
+          "quantity": "1",
+          "unit_price": "35.00"
+        }
+      ]
+    },
+    {
+      "number": "PO-2026-0421",
+      "vendor_id": "V003",
+      "issued": "2026-10-02",
+      "lines": [
+        {
+          "sku": "TA-PAL-LY-PA",
+          "description": "Transport palette Lyon > Paris",
+          "quantity": "12",
+          "unit_price": "128.00"
+        },
+        {
+          "sku": "TA-HAYON",
+          "description": "Option hayon élévateur",
+          "quantity": "4",
+          "unit_price": "25.00"
+        }
+      ]
+    },
+    {
+      "number": "PO-2026-0433",
+      "vendor_id": "V004",
+      "issued": "2026-10-06",
+      "lines": [
+        {
+          "sku": "IMP-FLY-A5",
+          "description": "Flyers A5 quadri recto/verso (lot de 1000)",
+          "quantity": "5",
+          "unit_price": "94.00"
+        },
+        {
+          "sku": "IMP-KAK-85",
+          "description": "Kakemono 85x200 cm avec enrouleur",
+          "quantity": "2",
+          "unit_price": "119.00"
+        }
+      ]
+    },
+    {
+      "number": "PO-2026-0440",
+      "vendor_id": "V005",
+      "issued": "2026-10-08",
+      "lines": [
+        {
+          "sku": "CAF-GRAIN-1K",
+          "description": "Café en grains bio 1 kg",
+          "quantity": "24",
+          "unit_price": "19.80"
+        },
+        {
+          "sku": "CAF-THE-100",
+          "description": "Thé vert sachets (boîte de 100)",
+          "quantity": "6",
+          "unit_price": "12.40"
+        }
+      ]
+    },
+    {
+      "number": "PO-2026-0447",
+      "vendor_id": "V002",
+      "issued": "2026-10-09",
+      "lines": [
+        {
+          "sku": "NC-VPS-L",
+          "description": "Serveur VPS L - novembre 2026",
+          "quantity": "3",
+          "unit_price": "89.00"
+        },
+        {
+          "sku": "NC-SSL-WC",
+          "description": "Certificat SSL wildcard - 1 an",
+          "quantity": "1",
+          "unit_price": "149.00"
+        }
+      ]
+    },
+    {
+      "number": "PO-2026-0449",
+      "vendor_id": "V001",
+      "issued": "2026-10-12",
+      "lines": [
+        {
+          "sku": "PAP-A4-80",
+          "description": "Ramettes papier A4 80 g (carton de 5)",
+          "quantity": "30",
+          "unit_price": "21.90"
+        },
+        {
+          "sku": "PAP-POSTIT",
+          "description": "Notes repositionnables 76x76 (lot de 12)",
+          "quantity": "20",
+          "unit_price": "8.20"
+        }
+      ]
+    },
+    {
+      "number": "PO-2026-0451",
+      "vendor_id": "V004",
+      "issued": "2026-10-13",
+      "lines": [
+        {
+          "sku": "IMP-CV-500",
+          "description": "Cartes de visite 350 g (lot de 500)",
+          "quantity": "8",
+          "unit_price": "39.00"
+        },
+        {
+          "sku": "IMP-ENT-A4",
+          "description": "Papier à en-tête A4 (ramette de 500)",
+          "quantity": "4",
+          "unit_price": "62.50"
+        }
+      ]
+    },
+    {
+      "number": "PO-2026-0455",
+      "vendor_id": "V005",
+      "issued": "2026-10-15",
+      "lines": [
+        {
+          "sku": "CAF-GRAIN-1K",
+          "description": "Café en grains bio 1 kg",
+          "quantity": "18",
+          "unit_price": "19.80"
+        },
+        {
+          "sku": "CAF-SUCRE-1K",
+          "description": "Sucre en morceaux 1 kg",
+          "quantity": "10",
+          "unit_price": "2.35"
+        },
+        {
+          "sku": "CAF-GOB-50",
+          "description": "Gobelets carton 20 cl (paquet de 50)",
+          "quantity": "12",
+          "unit_price": "4.90"
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "number": "BL-7702",
+      "po_number": "PO-2026-0388",
+      "received": "2026-09-22",
+      "lines": [
+        {
+          "sku": "PAP-A4-80",
+          "quantity_received": "40"
+        },
+        {
+          "sku": "PAP-ENV-C5",
+          "quantity_received": "10"
+        }
+      ]
+    },
+    {
+      "number": "BL-7781",
+      "po_number": "PO-2026-0412",
+      "received": "2026-10-03",
+      "lines": [
+        {
+          "sku": "PAP-A4-80",
+          "quantity_received": "25"
+        },
+        {
+          "sku": "PAP-CLASS-A4",
+          "quantity_received": "60"
+        }
+      ]
+    },
+    {
+      "number": "SRV-1018",
+      "po_number": "PO-2026-0418",
+      "received": "2026-10-28",
+      "lines": [
+        {
+          "sku": "NC-VPS-L",
+          "quantity_received": "3"
+        },
+        {
+          "sku": "NC-BACKUP",
+          "quantity_received": "1"
+        }
+      ]
+    },
+    {
+      "number": "BL-TA-5520",
+      "po_number": "PO-2026-0421",
+      "received": "2026-10-15",
+      "lines": [
+        {
+          "sku": "TA-PAL-LY-PA",
+          "quantity_received": "12"
+        },
+        {
+          "sku": "TA-HAYON",
+          "quantity_received": "4"
+        }
+      ]
+    },
+    {
+      "number": "BL-IR-3307",
+      "po_number": "PO-2026-0433",
+      "received": "2026-10-14",
+      "lines": [
+        {
+          "sku": "IMP-FLY-A5",
+          "quantity_received": "4"
+        },
+        {
+          "sku": "IMP-KAK-85",
+          "quantity_received": "2"
+        }
+      ]
+    },
+    {
+      "number": "BL-BC-0912",
+      "po_number": "PO-2026-0440",
+      "received": "2026-10-12",
+      "lines": [
+        {
+          "sku": "CAF-GRAIN-1K",
+          "quantity_received": "24"
+        },
+        {
+          "sku": "CAF-THE-100",
+          "quantity_received": "6"
+        }
+      ]
+    },
+    {
+      "number": "SRV-1103",
+      "po_number": "PO-2026-0447",
+      "received": "2026-10-27",
+      "lines": [
+        {
+          "sku": "NC-VPS-L",
+          "quantity_received": "3"
+        },
+        {
+          "sku": "NC-SSL-WC",
+          "quantity_received": "1"
+        }
+      ]
+    },
+    {
+      "number": "BL-7810",
+      "po_number": "PO-2026-0449",
+      "received": "2026-10-19",
+      "lines": [
+        {
+          "sku": "PAP-A4-80",
+          "quantity_received": "30"
+        },
+        {
+          "sku": "PAP-POSTIT",
+          "quantity_received": "20"
+        }
+      ]
+    },
+    {
+      "number": "BL-IR-3341",
+      "po_number": "PO-2026-0451",
+      "received": "2026-10-21",
+      "lines": [
+        {
+          "sku": "IMP-CV-500",
+          "quantity_received": "8"
+        },
+        {
+          "sku": "IMP-ENT-A4",
+          "quantity_received": "4"
+        }
+      ]
+    },
+    {
+      "number": "BL-BC-0950",
+      "po_number": "PO-2026-0455",
+      "received": "2026-10-20",
+      "lines": [
+        {
+          "sku": "CAF-GRAIN-1K",
+          "quantity_received": "18"
+        },
+        {
+          "sku": "CAF-SUCRE-1K",
+          "quantity_received": "10"
+        },
+        {
+          "sku": "CAF-GOB-50",
+          "quantity_received": "12"
+        }
+      ]
+    }
+  ],
+  "invoice_history": [
+    {
+      "vendor_id": "V001",
+      "number": "FA-2026-0877",
+      "issue_date": "2026-10-06",
+      "total_ttc": "1273.20",
+      "po_number": "PO-2026-0388",
+      "status": "paid",
+      "paid_on": "2026-10-20"
+    },
+    {
+      "vendor_id": "V003",
+      "number": "TAL-26-10233",
+      "issue_date": "2026-09-30",
+      "total_ttc": "1958.40",
+      "po_number": "PO-2026-0377",
+      "status": "paid",
+      "paid_on": "2026-10-15"
+    }
+  ],
+  "payment_queue": []
+}

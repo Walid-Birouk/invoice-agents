@@ -1,0 +1,48 @@
+# Swap the model per client: any OpenAI-compatible endpoint works
+# (DeepSeek, Mistral La Plateforme, EU-hosted vLLM serving DeepSeek or Qwen...).
+model:
+  base_url: https://api.deepseek.com
+  name: deepseek-chat
+  api_key_env: LLM_API_KEY
+  temperature: 0
+  timeout_s: 60                   # per LLM call
+
+limits:
+  max_tool_calls_per_task: 8      # per agent per task; the coordinator needs 4 delegations
+  a2a_timeout_s: 180              # one delegated task, end to end
+  circuit_breaker_failures: 3     # consecutive failures before an agent is skipped
+  price_tolerance: 0.02           # 2% unit price drift allowed vs PO
+
+mcp_servers:
+  erp:   {module: ap_agents.mcp.erp}
+  inbox: {module: ap_agents.mcp.inbox}
+  mail:  {module: ap_agents.mcp.mail}
+
+# Least privilege: each agent sees only the listed tools.
+agents:
+  coordinator:
+    port: 9100
+    role: Takes one invoice from the inbox, delegates to specialists over A2A, aggregates their findings, decides approve / hold / escalate.
+    tools: []
+    delegates_to: [extractor, matcher, validator, communicator]
+
+  extractor:
+    port: 9101
+    role: Reads one invoice document and returns a structured Invoice. Never guesses missing fields.
+    tools: [inbox.read_invoice]
+
+  matcher:
+    port: 9102
+    role: Three-way match of invoice lines against purchase order and goods receipt.
+    tools: [erp.check_three_way_match, erp.get_purchase_order, erp.get_receipts]
+
+  validator:
+    port: 9103
+    role: Checks duplicates, vendor identity (SIRET, VAT, IBAN vs master data) and totals.
+    tools: [erp.find_vendor, erp.check_vendor_and_duplicates, erp.list_invoices_history]
+
+  communicator:
+    port: 9104
+    role: Drafts the approval request for the finance team and emails to suppliers about held invoices.
+    tools: [erp.get_vendor, erp.queue_payment, mail.draft_email]
+    requires_human_approval: [erp.queue_payment]

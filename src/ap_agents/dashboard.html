@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comptes fournisseurs</title>
+<style>
+  :root {
+    --bg: #f5f5f7; --surface: #ffffff; --surface-2: #fbfbfd; --hairline: rgba(0,0,0,.08);
+    --text: #1d1d1f; --secondary: #6e6e73; --tertiary: #86868b;
+    --accent: #0071e3; --accent-soft: rgba(0,113,227,.1);
+    --green: #248a3d; --green-soft: rgba(36,138,61,.1);
+    --orange: #b25000; --orange-soft: rgba(255,149,0,.14);
+    --red: #d70015; --red-soft: rgba(255,59,48,.1);
+    --shadow: 0 1px 1px rgba(0,0,0,.02), 0 6px 24px rgba(0,0,0,.05);
+    --bar: rgba(245,245,247,.72);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000; --surface: #1c1c1e; --surface-2: #232325; --hairline: rgba(255,255,255,.1);
+      --text: #f5f5f7; --secondary: #a1a1a6; --tertiary: #8e8e93;
+      --accent: #2997ff; --accent-soft: rgba(41,151,255,.16);
+      --green: #30d158; --green-soft: rgba(48,209,88,.14);
+      --orange: #ff9f0a; --orange-soft: rgba(255,159,10,.16);
+      --red: #ff453a; --red-soft: rgba(255,69,58,.16);
+      --shadow: none; --bar: rgba(22,22,23,.72);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; }
+  body { margin: 0; background: var(--bg); color: var(--text); letter-spacing: -.01em;
+         font: 15px/1.47 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", sans-serif; }
+  button { font: inherit; letter-spacing: inherit; cursor: pointer; border: 0; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Toolbar */
+  .bar { position: sticky; top: 0; z-index: 10; height: 56px; display: flex; align-items: center; gap: 20px; padding: 0 28px;
+         background: var(--bar); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
+         border-bottom: 1px solid var(--hairline); }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
+  .brand small { display: block; font-weight: 400; color: var(--secondary); font-size: 12px; margin-top: -2px; }
+  .app-icon { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center;
+              background: linear-gradient(180deg, #3a8dff, #0058d6); color: #fff; }
+  .spacer { flex: 1; }
+  .seg { display: inline-flex; padding: 2px; border-radius: 9px; background: rgba(118,118,128,.12); }
+  .seg button { padding: 4px 14px; border-radius: 7px; background: transparent; color: var(--text); font-size: 13px; }
+  .seg button.on { background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,.12); font-weight: 500; }
+  .btn { padding: 7px 16px; border-radius: 980px; font-size: 14px; font-weight: 500; background: transparent; color: var(--accent); }
+  .btn:hover { background: var(--accent-soft); }
+  .btn.primary { background: var(--accent); color: #fff; }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .btn.small { padding: 4px 12px; font-size: 13px; background: var(--accent-soft); }
+  .pill-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .model { font-size: 12px; color: var(--tertiary); }
+
+  /* Layout */
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 36px 28px 64px; display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 28px; }
+  @media (max-width: 1080px) { .wrap { grid-template-columns: 1fr; } }
+  h1 { font-size: 40px; line-height: 1.1; letter-spacing: -.025em; margin: 0; font-weight: 700; }
+  .lede { font-size: 19px; color: var(--secondary); margin: 8px 0 28px; letter-spacing: -.015em; }
+  .lede b { color: var(--text); font-weight: 600; }
+  .label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .02em; color: var(--tertiary); margin: 0 0 10px 4px; }
+  .card { background: var(--surface); border-radius: 18px; box-shadow: var(--shadow); }
+
+  /* KPIs */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+  .kpi { padding: 18px 20px; }
+  .kpi .v { font-size: 30px; font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .kpi .k { font-size: 13px; color: var(--secondary); margin-top: 4px; }
+  .kpi .v small { font-size: 17px; color: var(--tertiary); font-weight: 600; }
+  .kpi.green .v { color: var(--green); } .kpi.red .v { color: var(--red); }
+  .kpi.orange .v { color: var(--orange); }
+  @media (max-width: 760px) { .kpis { grid-template-columns: 1fr 1fr; } }
+  .legend { font-size: 12px; color: var(--tertiary); margin: -6px 0 10px 4px; }
+  .legend b { font-weight: 600; color: var(--secondary); }
+
+  /* Agent team */
+  .team { display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px; margin-bottom: 28px; }
+  .agent { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 13px; }
+  .agent + .agent { border-left: 1px solid var(--hairline); border-radius: 0; }
+  .glyph { position: relative; width: 34px; height: 34px; flex: none; border-radius: 50%; display: grid; place-items: center;
+           background: var(--surface-2); color: var(--secondary); border: 1px solid var(--hairline); transition: .3s; }
+  .agent.busy .glyph { color: var(--accent); background: var(--accent-soft); border-color: transparent; }
+  .agent.busy .glyph::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--accent);
+                              opacity: .0; animation: ring 1.4s ease-out infinite; }
+  @keyframes ring { 0% { transform: scale(.85); opacity: .5; } 100% { transform: scale(1.25); opacity: 0; } }
+  .agent b { display: block; font-size: 13px; font-weight: 600; }
+  .agent span { font-size: 12px; color: var(--tertiary); }
+  .agent.busy span { color: var(--accent); }
+  @media (max-width: 760px) { .team { grid-template-columns: 1fr 1fr; } .agent + .agent { border-left: 0; } }
+
+  /* Invoice list */
+  .list { overflow: hidden; }
+  .row { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 14px; align-items: center;
+         padding: 14px 18px; cursor: pointer; position: relative; transition: background .15s; }
+  .row + .row::before { content: ""; position: absolute; top: 0; left: 72px; right: 0; border-top: 1px solid var(--hairline); }
+  .row:hover { background: var(--surface-2); }
+  .row.sel { background: var(--accent-soft); }
+  .row.sel::before, .row.sel + .row::before { border-color: transparent; }
+  .avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: 14px;
+            color: #fff; background: #c7c7cc; }
+  .who { min-width: 0; }
+  .who b { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .who span { font-size: 13px; color: var(--secondary); }
+  .right { text-align: right; }
+  .amount { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .status { font-size: 13px; color: var(--secondary); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--tertiary); }
+  .s-approve .dot, .s-paid .dot { background: var(--green); } .s-approve, .s-paid { color: var(--green); }
+  .s-hold .dot { background: var(--orange); } .s-hold { color: var(--orange); }
+  .s-escalate .dot, .s-ERROR .dot, .s-rejected .dot { background: var(--red); } .s-escalate, .s-ERROR, .s-rejected { color: var(--red); }
+  .s-processing { color: var(--accent); } .s-processing .dot { background: var(--accent); animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: .25; } }
+  .progress { grid-column: 2 / -1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: -4px; }
+  .progress i { height: 3px; border-radius: 2px; background: var(--hairline); transition: background .4s; }
+  .progress i.done { background: var(--accent); }
+  .progress i.running { background: linear-gradient(90deg, var(--accent) 0 40%, var(--hairline) 40%); background-size: 200% 100%; animation: slide 1s linear infinite; }
+  @keyframes slide { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+  .empty { padding: 48px 24px; text-align: center; color: var(--tertiary); }
+
+  /* Inspector */
+  .inspector { position: sticky; top: 84px; align-self: start; max-height: calc(100vh - 110px); overflow: auto; padding: 26px; }
+  .inspector h2 { font-size: 24px; letter-spacing: -.02em; margin: 0; line-height: 1.2; }
+  .inspector .meta { color: var(--secondary); font-size: 14px; margin-top: 4px; }
+  .big { font-size: 34px; font-weight: 700; letter-spacing: -.03em; margin: 18px 0 2px; font-variant-numeric: tabular-nums; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 980px; font-size: 13px; font-weight: 500; }
+  .pill.s-approve, .pill.s-paid { background: var(--green-soft); } .pill.s-hold { background: var(--orange-soft); }
+  .pill.s-escalate, .pill.s-ERROR, .pill.s-rejected { background: var(--red-soft); }
+  .pill.s-processing { background: var(--accent-soft); } .pill.s-waiting { background: rgba(118,118,128,.12); color: var(--secondary); }
+  .section { margin-top: 26px; }
+  .head { display: flex; align-items: flex-start; gap: 12px; } .head > div { flex: 1; min-width: 0; }
+  .icon-btn { flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2);
+              border: 1px solid var(--hairline); color: var(--secondary); cursor: pointer; }
+  .icon-btn:hover { color: var(--accent); }
+  .label-row { display: flex; align-items: baseline; justify-content: space-between; }
+  .label-row button { background: none; border: 0; color: var(--accent); font-size: 13px; cursor: pointer; padding: 0 4px 10px; }
+  .step > details > summary { list-style: none; cursor: pointer; display: flex; gap: 8px; align-items: flex-start; }
+  .step > details > summary::-webkit-details-marker { display: none; }
+  .step > details > summary > div { flex: 1; }
+  .chev { color: var(--tertiary); transition: transform .2s; margin-top: 5px; }
+  .step > details[open] > summary .chev { transform: rotate(90deg); }
+  body.wide .wrap { grid-template-columns: minmax(0, 860px); justify-content: center; }
+  body.wide .wrap > div:first-child { display: none; }
+  body.wide .inspector { position: static; max-height: none; padding: 36px 40px; }
+  body.wide .inspector .big { font-size: 44px; }
+  .steps { list-style: none; margin: 0; padding: 0; }
+  .step { display: grid; grid-template-columns: 26px 1fr; gap: 12px; position: relative; padding-bottom: 18px; }
+  .step:not(:last-child)::after { content: ""; position: absolute; left: 12px; top: 28px; bottom: 2px; width: 2px; background: var(--hairline); }
+  .icon { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2);
+          border: 1.5px solid var(--hairline); color: var(--tertiary); }
+  .icon.ok { background: var(--green); border-color: var(--green); color: #fff; }
+  .icon.warn { background: var(--orange); border-color: var(--orange); color: #fff; }
+  .icon.block { background: var(--red); border-color: var(--red); color: #fff; }
+  .icon.running { border-color: var(--accent); border-top-color: transparent; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .step b { font-weight: 600; font-size: 14px; display: block; padding-top: 3px; }
+  .step .by { font-size: 12px; color: var(--tertiary); }
+  .note { margin-top: 8px; font-size: 13.5px; line-height: 1.45; padding: 10px 12px; border-radius: 10px; }
+  .note.warning { background: var(--orange-soft); }
+  .note.blocking { background: var(--red-soft); }
+  .note.info { background: var(--surface-2); color: var(--secondary); }
+  .mail { margin-top: 8px; border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+  .mail summary { list-style: none; padding: 10px 12px; cursor: pointer; font-size: 13.5px; }
+  .mail summary::-webkit-details-marker { display: none; }
+  .mail summary span { display: block; color: var(--tertiary); font-size: 12px; }
+  .mail.draft { border-color: var(--orange); }
+  .mail.discarded summary { color: var(--tertiary); text-decoration: line-through; }
+  .draft-edit { padding: 12px; display: grid; gap: 8px; background: var(--surface-2); border-top: 1px solid var(--hairline); }
+  .draft-edit input, .draft-edit textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 13.5px; line-height: 1.5; color: var(--text);
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 8px; padding: 8px 10px; resize: vertical; }
+  .draft-edit input:focus, .draft-edit textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .draft-edit .actions { display: flex; gap: 8px; }
+  .mail pre { margin: 0; padding: 12px; white-space: pre-wrap; font: inherit; font-size: 13px; line-height: 1.5; background: var(--surface-2); border-top: 1px solid var(--hairline); }
+  .approve-box { margin-top: 22px; padding: 18px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--hairline); }
+  .approve-box p { margin: 0 0 12px; font-size: 14px; color: var(--secondary); }
+  .approve-box .actions { display: flex; gap: 10px; }
+  .btn.big { padding: 11px 20px; font-size: 15px; flex: 1; }
+  .btn.danger { color: var(--red); }
+  .btn.danger:hover { background: var(--red-soft); }
+  .audit summary { cursor: pointer; font-size: 13px; color: var(--accent); }
+  .audit ol { list-style: none; padding: 0; margin: 10px 0 0; font-size: 12px; color: var(--secondary); font-variant-numeric: tabular-nums; }
+  .audit li { padding: 4px 0; border-top: 1px solid var(--hairline); display: grid; grid-template-columns: 62px 92px 1fr; gap: 6px; }
+  .placeholder { text-align: center; color: var(--tertiary); padding: 60px 10px; }
+  .placeholder svg { margin-bottom: 10px; }
+  .toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 20px); opacity: 0; transition: .35s;
+           background: rgba(29,29,31,.92); color: #fff; padding: 12px 20px; border-radius: 980px; font-size: 14px; backdrop-filter: blur(10px); }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="brand">
+    <div class="app-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h4"/></svg></div>
+    <div>Comptes fournisseurs<small>Atelier Moreau SAS</small></div>
+  </div>
+  <div class="spacer"></div>
+  <div class="seg" id="filters">
+    <button data-f="all" class="on">Toutes</button><button data-f="approve">À valider</button><button data-f="hold">En attente</button><button data-f="escalate">Bloquées</button>
+  </div>
+  <div class="spacer"></div>
+  <span class="model" id="model"></span>
+  <button class="btn" id="reset">Réinitialiser</button>
+  <button class="btn primary" id="run">Tout analyser</button>
+</div>
+
+<div class="wrap">
+  <div>
+    <h1>Boîte de réception</h1>
+    <p class="lede" id="lede">Six factures fournisseurs attendent d'être contrôlées.</p>
+    <div class="kpis" id="kpis"></div>
+    <div class="label">Équipe d'agents</div>
+    <div class="legend"><b>A2A</b> : les agents se délèguent le travail · <b>MCP</b> : leur accès aux outils (boîte mail, ERP)</div>
+    <div class="card team" id="team"></div>
+    <div class="label">Factures</div>
+    <div class="card list" id="list"></div>
+  </div>
+  <aside class="card inspector" id="inspector"></aside>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const AGENTS = {
+  coordinator: { name: "Coordinateur", role: "Délègue", icon: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="3"/>' },
+  extractor: { name: "Extracteur", role: "Lit les PDF", icon: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/>' },
+  matcher: { name: "Rapprocheur", role: "Commande / livraison", icon: '<path d="M8 7h12M8 12h12M8 17h12"/><path d="M4 7h.01M4 12h.01M4 17h.01"/>' },
+  validator: { name: "Contrôleur", role: "IBAN, doublons", icon: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>' },
+  communicator: { name: "Communicant", role: "Emails", icon: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>' },
+};
+const STEPS = [
+  ["extractor", "Lecture de la facture", "Extracteur · MCP inbox"],
+  ["matcher", "Rapprochement commande et livraison", "Rapprocheur · MCP ERP"],
+  ["validator", "Contrôle fournisseur, IBAN et doublons", "Contrôleur · MCP ERP"],
+  ["communicator", "Décision et suite donnée", "Coordinateur → Communicant · A2A"],
+];
+const STATUS = {
+  waiting: "Non analysée", processing: "Analyse en cours", approve: "Prête à payer", hold: "En attente du fournisseur",
+  escalate: "Bloquée · risque", ERROR: "Revue humaine requise", paid: "Paiement validé", rejected: "Paiement refusé",
+};
+const HUES = ["#0a84ff", "#30b0c7", "#ff9f0a", "#bf5af2", "#ff375f", "#34c759"];
+const svg = (p, s = 18) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const I = { ok: svg('<path d="M5 12l5 5 9-10"/>', 14), warn: svg('<path d="M12 7v6M12 17h.01"/>', 14), block: svg('<path d="M7 7l10 10M17 7L7 17"/>', 14) };
+const eur = v => Number(v).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const hhmm = iso => new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+const secs = s => `${s.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} s`;
+
+let S = { invoices: [], payments: [], emails: [], vendors: {} }, events = [], next = 0, selected = null, filter = "all";
+
+function statusOf(inv) {
+  if (inv.state !== "done") return inv.state;
+  const o = inv.outcome || {}, p = S.payments.find(p => p.invoice_number === o.invoice_number);
+  if (p?.status === "approved") return "paid";
+  if (p?.status === "rejected") return "rejected";
+  return o.decision || "ERROR";
+}
+function evFor(file) {
+  const all = events.filter(e => e.ref === file);
+  const last = all.map(e => e.agent === "coordinator" && e.kind === "task").lastIndexOf(true);
+  return last > 0 ? all.slice(last) : all;  // a re-run starts a fresh journey
+}
+function stepState(file, agent) {
+  const ev = evFor(file).filter(e => e.agent === agent);
+  return ev.some(e => e.kind === "answer") ? "done" : ev.some(e => e.kind === "task") ? "running" : "pending";
+}
+function checkFindings(file, tool) {
+  const r = evFor(file).filter(e => e.kind === "tool_result" && e.tool === tool).pop();
+  try { const f = JSON.parse(r.result); return Array.isArray(f) ? f : null; } catch { return null; }
+}
+function vendorOf(inv) { return S.vendors[(inv.outcome || {}).vendor_id] || null; }
+function hue(file) { return HUES[(parseInt(file) - 1) % HUES.length] || "#8e8e93"; }
+function initials(name) { return name.replace(/\b(SAS|SARL|du|de|la|le)\b/g, "").split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join(""); }
+
+function renderTeam() {
+  document.getElementById("team").innerHTML = Object.entries(AGENTS).map(([k, a]) => {
+    const tasks = events.filter(e => e.agent === k && e.kind === "task").length;
+    const answers = events.filter(e => e.agent === k && e.kind === "answer").length;
+    const busy = tasks - answers;
+    return `<div class="agent ${busy > 0 ? "busy" : ""}"><div class="glyph">${svg(a.icon)}</div>
+      <div><b>${a.name}</b><span>${busy > 0 ? `${busy} en cours` : answers ? `${answers} terminée${answers > 1 ? "s" : ""}` : a.role}</span></div></div>`;
+  }).join("");
+}
+
+function renderLede() {
+  const inv = S.invoices, done = inv.filter(i => i.state === "done"), busy = inv.filter(i => i.state === "processing").length;
+  const el = document.getElementById("lede");
+  if (busy) { el.innerHTML = `Les agents analysent <b>${busy}</b> facture${busy > 1 ? "s" : ""}…`; return; }
+  if (!done.length) { el.innerHTML = `${inv.length} factures fournisseurs attendent d'être contrôlées.`; return; }
+  const n = s => inv.filter(i => statusOf(i) === s).length;
+  const t = Math.max(...done.map(i => i.finished)) - Math.min(...done.map(i => i.started));
+  const parts = [[n("approve"), "à valider"], [n("hold"), "en attente du fournisseur"], [n("escalate"), "bloquée" + (n("escalate") > 1 ? "s" : "")],
+                 [n("paid"), "payée" + (n("paid") > 1 ? "s" : "")]].filter(([c]) => c).map(([c, l]) => `<b>${c}</b> ${l}`);
+  const head = done.length === inv.length ? `${inv.length} factures contrôlées` : `${done.length} facture${done.length > 1 ? "s" : ""} sur ${inv.length} contrôlée${done.length > 1 ? "s" : ""}`;
+  el.innerHTML = `${head} en <b>${secs(t)}</b>${parts.length ? ". " + parts.join(", ") : ""}.`;
+}
+
+function renderKpis() {
+  const inv = S.invoices, done = inv.filter(i => i.state === "done");
+  const sum = st => inv.filter(i => statusOf(i) === st).reduce((t, i) => t + Number(i.outcome.amount_ttc || 0), 0);
+  const count = st => inv.filter(i => statusOf(i) === st).length;
+  const k = (v, label, cls = "") => `<div class="card kpi ${cls}"><div class="v">${v}</div><div class="k">${label}</div></div>`;
+  document.getElementById("kpis").innerHTML =
+    k(`${done.length}<small> / ${inv.length}</small>`, "factures contrôlées") +
+    k(eur(sum("approve")), `à valider · ${count("approve")} facture${count("approve") > 1 ? "s" : ""}`) +
+    k(eur(sum("escalate")), `protégés · ${count("escalate")} bloquée${count("escalate") > 1 ? "s" : ""}`, count("escalate") ? "red" : "") +
+    k(drafts().length, `email${drafts().length > 1 ? "s" : ""} à relire · ${S.emails.filter(m => m.status === "sent").length} envoyé${S.emails.filter(m => m.status === "sent").length > 1 ? "s" : ""}`, drafts().length ? "orange" : "");
+}
+
+function renderList() {
+  const rows = S.invoices.filter(i => filter === "all" || statusOf(i) === filter);
+  document.getElementById("list").innerHTML = rows.length ? rows.map(inv => {
+    const o = inv.outcome || {}, v = vendorOf(inv), st = statusOf(inv);
+    const title = v ? v.name : inv.file.replace(/^\d\d_/, "").replace(/\.pdf$/, "").replace(/_/g, " ");
+    const sub = o.invoice_number ? `${o.invoice_number}${inv.finished ? ` · analysée en ${secs(inv.finished - inv.started)}` : ""}` : inv.file;
+    const bar = st === "processing" ? `<div class="progress">${STEPS.map(([a]) => `<i class="${stepState(inv.file, a)}"></i>`).join("")}</div>` : "";
+    return `<div class="row ${selected === inv.file ? "sel" : ""}" data-file="${esc(inv.file)}">
+      <div class="avatar" style="background:${hue(inv.file)}">${v ? esc(initials(v.name)) : svg('<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/>', 18)}</div>
+      <div class="who"><b>${esc(title)}</b><span>${esc(sub)}</span></div>
+      <div class="right"><div class="amount">${o.amount_ttc ? eur(o.amount_ttc) : ""}</div>
+        ${st === "waiting" ? `<button class="btn small" onclick="event.stopPropagation(); runOne('${esc(inv.file)}')">Analyser</button>`
+          : `<div class="status s-${st}"><i class="dot"></i>${STATUS[st] || st}</div>`}</div>${bar}</div>`;
+  }).join("") : `<div class="empty">Aucune facture dans cette catégorie.</div>`;
+  document.querySelectorAll(".row").forEach(r => r.onclick = () => { if (selected !== r.dataset.file) document.activeElement?.blur(); selected = r.dataset.file; render(); });
+}
+
+function notes(findings) {
+  if (!findings) return "";
+  if (!findings.length) return `<div class="note info">Aucune anomalie.</div>`;
+  return findings.map(f => `<div class="note ${esc(f.severity)}">${esc(f.message)}</div>`).join("");
+}
+function iconFor(state, findings) {
+  if (state === "running") return `<div class="icon running"></div>`;
+  if (state !== "done") return `<div class="icon"></div>`;
+  const sev = new Set((findings || []).map(f => f.severity));
+  return sev.has("blocking") ? `<div class="icon block">${I.block}</div>` : sev.has("warning") ? `<div class="icon warn">${I.warn}</div>` : `<div class="icon ok">${I.ok}</div>`;
+}
+
+function renderInspector() {
+  const box = document.getElementById("inspector");
+  const inv = S.invoices.find(i => i.file === selected);
+  if (!inv) {
+    box.innerHTML = `<div class="placeholder">${svg('<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/>', 40)}<div>Sélectionnez une facture pour voir le travail des agents.</div></div>`;
+    lastHtml = "";
+    return;
+  }
+  const o = inv.outcome || {}, v = vendorOf(inv), st = statusOf(inv);
+  const found = { matcher: checkFindings(inv.file, "erp__check_three_way_match"), validator: checkFindings(inv.file, "erp__check_vendor_and_duplicates") };
+  const mails = o.invoice_number ? S.emails.filter(m => (m.subject + m.body).includes(o.invoice_number)) : [];
+  const decisionText = { approve: "Facture conforme. Paiement préparé, en attente de votre validation.",
+    hold: "Écart détecté. Un email au fournisseur est prêt à relire, aucun paiement préparé.",
+    escalate: "Risque détecté. Une alerte pour la comptabilité est prête à relire, aucun paiement préparé.",
+    ERROR: "L'analyse n'a pas abouti. Une revue humaine est nécessaire." }[o.decision || (inv.state === "done" ? "ERROR" : "")];
+
+  const steps = STEPS.map(([agent, title, by]) => {
+    const state = stepState(inv.file, agent);
+    let body = "";
+    if (agent === "matcher" || agent === "validator") body = state === "done" ? notes(found[agent]) : "";
+    if (agent === "extractor" && state === "done" && o.invoice_number) body = `<div class="note info">Facture ${esc(o.invoice_number)} · ${eur(o.amount_ttc)} TTC</div>`;
+    if (agent === "communicator" && inv.state === "done") {
+      body = `<div class="note ${o.decision === "approve" ? "info" : o.decision === "hold" ? "warning" : "blocking"}">${decisionText}</div>` +
+        mails.map(mailCard).join("");
+    }
+    const f = agent === "communicator" ? (o.decision === "escalate" ? [{ severity: "blocking" }] : o.decision === "hold" ? [{ severity: "warning" }] : []) : found[agent];
+    return `<li class="step">${iconFor(state, f)}<details data-k="step-${agent}"${isOpen(`step-${agent}`, true)}><summary><div><b>${title}</b><div class="by">${by}</div></div>${body ? CHEV : ""}</summary>${body}</details></li>`;
+  }).join("");
+
+  const pay = S.payments.find(p => p.invoice_number === o.invoice_number);
+  let approval = "";
+  if (pay?.status === "pending_approval") {
+    approval = `<div class="approve-box"><p>Virement de <b>${eur(pay.amount_ttc)}</b> vers l'IBAN vérifié du fournisseur<br>${esc(pay.iban)}<br>Les agents préparent, vous seul validez.</p>
+      <div class="actions"><button class="btn primary big" onclick="decide('${esc(pay.invoice_number)}','approve')">Valider le paiement</button>
+      <button class="btn danger big" onclick="decide('${esc(pay.invoice_number)}','reject')">Refuser</button></div></div>`;
+  } else if (pay) {
+    approval = `<div class="approve-box"><p style="margin:0">${pay.status === "approved" ? "✓ Paiement validé" : "Paiement refusé"} par ${esc(pay.decided_by)} à ${hhmm(pay.decided_at)}.</p></div>`;
+  }
+  const log = evFor(inv.file).filter(e => ["task", "tool_call", "answer", "guard_fail", "guard_block"].includes(e.kind))
+    .map(e => `<li><span>${hhmm(e.at)}</span><span>${AGENTS[e.agent]?.name || e.agent}</span><span>${
+      e.kind === "tool_call" ? esc(e.tool) : e.kind === "task" ? "reçoit la tâche" : e.kind === "answer" ? "répond" : "garde-fou : " + esc(e.problem || e.reason)}</span></li>`).join("");
+
+  const wide = document.body.classList.contains("wide");
+  const html = `<div class="head"><div><h2>${esc(v ? v.name : inv.file)}</h2>
+    <div class="meta">${o.invoice_number ? esc(o.invoice_number) + " · " : ""}<a href="/inbox/${encodeURIComponent(inv.file)}" target="_blank">Ouvrir le PDF</a></div></div>
+    <button class="icon-btn" onclick="toggleWide()" title="${wide ? "Réduire (Échap)" : "Agrandir"}" aria-label="${wide ? "Réduire" : "Agrandir"}">${svg(wide ? '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>' : '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', 16)}</button></div>
+    ${o.amount_ttc ? `<div class="big">${eur(o.amount_ttc)}</div>` : `<div style="height:18px"></div>`}
+    <div class="pill-row"><span class="pill s-${st}"><i class="dot"></i>${STATUS[st] || st}</span>
+      ${st === "processing" ? "" : `<button class="btn small" onclick="runOne('${esc(inv.file)}')">${inv.state === "done" ? "Relancer l'analyse" : "Analyser cette facture"}</button>`}</div>
+    ${approval}
+    <div class="section"><div class="label-row"><div class="label">Parcours de la facture</div><button onclick="toggleAllSteps()">${STEPS.every(([a]) => isOpen(`step-${a}`, true)) ? "Tout replier" : "Tout déplier"}</button></div><ol class="steps">${steps}</ol></div>
+    ${log ? `<details class="section audit" data-k="audit"${isOpen("audit", wide)}><summary>Journal d'audit (${evFor(inv.file).length} événements)</summary><ol>${log}</ol></details>` : ""}`;
+  // only touch the DOM when something changed, so open sections, scroll and typing stay put
+  if (html === lastHtml) return;
+  const scroll = box.scrollTop, winScroll = window.scrollY;
+  box.innerHTML = lastHtml = html;
+  box.scrollTop = scroll; window.scrollTo(0, winScroll);
+}
+
+// open/closed state of each section, per invoice; sections keep the user's choice across refreshes
+const openState = {}, draftEdits = {};
+let lastHtml = "";
+const CHEV = '<svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+function isOpen(k, def) { return (openState[`${selected}|${k}`] ?? def) ? " open" : ""; }
+function toggleAllSteps() {
+  const open = !STEPS.every(([a]) => isOpen(`step-${a}`, true));
+  STEPS.forEach(([a]) => openState[`${selected}|step-${a}`] = open);
+  renderInspector();
+}
+function toggleWide() { document.body.classList.toggle("wide"); window.scrollTo(0, 0); renderInspector(); }
+document.addEventListener("keydown", e => { if (e.key === "Escape" && document.body.classList.contains("wide")) toggleWide(); });
+
+function drafts() { return S.emails.filter(m => m.status === "draft"); }
+function mailCard(m) {
+  if (m.status !== "draft") {
+    const what = m.status === "sent" ? `Envoyé à ${esc(m.to)} par ${esc(m.decided_by)} · ${hhmm(m.decided_at)}` : `Brouillon supprimé · ${hhmm(m.decided_at)}`;
+    return `<details class="mail ${m.status}" data-k="mail-${m.id}"${isOpen(`mail-${m.id}`, false)}><summary>${esc(m.subject)}<span>${what}</span></summary><pre>${esc(m.body)}</pre></details>`;
+  }
+  const d = draftEdits[m.id] || m;
+  return `<details class="mail draft" data-k="mail-${m.id}"${isOpen(`mail-${m.id}`, true)}><summary>${esc(m.subject)}<span>Brouillon pour ${esc(m.to)} · rédigé par l'agent, à relire avant envoi</span></summary>
+    <div class="draft-edit"><input id="subj-${m.id}" data-id="${m.id}" value="${esc(d.subject)}" aria-label="Objet">
+    <textarea id="body-${m.id}" data-id="${m.id}" rows="9" aria-label="Message">${esc(d.body)}</textarea>
+    <div class="actions"><button class="btn primary" onclick="sendMail('${m.id}')">Envoyer</button>
+    <button class="btn danger" onclick="discardMail('${m.id}')">Supprimer</button></div></div></details>`;
+}
+
+function render() {
+  renderTeam(); renderLede(); renderKpis(); renderList();
+  // never re-render under the user's cursor while they type in a draft
+  if (!document.activeElement?.closest?.(".draft-edit")) renderInspector();
+  document.getElementById("run").disabled = S.invoices.some(i => i.state === "processing");
+}
+
+async function refresh() {
+  try {
+    const s = await (await fetch(`/api/state?since=${next}`)).json();
+    events.push(...s.events); next = s.next; S = s;
+    document.getElementById("model").textContent = s.model;
+    if (!selected && s.invoices.length) selected = s.invoices[0].file;
+    render();
+  } catch (e) { console.error(e); }
+}
+
+function toast(text) {
+  const t = document.getElementById("toast"); t.textContent = text; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2400);
+}
+async function decide(number, action) {
+  const r = await (await fetch(`/api/payments/${encodeURIComponent(number)}/${action}`, { method: "POST" })).json();
+  toast(action === "approve" ? `Paiement de ${eur(r.amount_ttc)} validé` : "Paiement refusé");
+  refresh();
+}
+async function sendMail(id) {
+  const body = { subject: document.getElementById(`subj-${id}`).value, body: document.getElementById(`body-${id}`).value };
+  const r = await fetch(`/api/emails/${id}/send`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  document.activeElement?.blur(); delete draftEdits[id];
+  toast(r.ok ? `Email envoyé à ${(await r.json()).to}` : "Envoi impossible");
+  refresh();
+}
+async function discardMail(id) {
+  await fetch(`/api/emails/${id}/discard`, { method: "POST" });
+  document.activeElement?.blur(); delete draftEdits[id];
+  toast("Brouillon supprimé");
+  refresh();
+}
+document.getElementById("inspector").addEventListener("input", e => {
+  const id = e.target.dataset.id;
+  if (id) draftEdits[id] = { subject: document.getElementById(`subj-${id}`).value, body: document.getElementById(`body-${id}`).value };
+});
+// "toggle" doesn't bubble: listen in the capture phase
+document.getElementById("inspector").addEventListener("toggle", e => {
+  const k = e.target.dataset?.k;
+  if (k) openState[`${selected}|${k}`] = e.target.open;
+}, true);
+document.getElementById("filters").onclick = e => {
+  if (!e.target.dataset.f) return;
+  filter = e.target.dataset.f;
+  document.querySelectorAll("#filters button").forEach(b => b.classList.toggle("on", b === e.target));
+  render();
+};
+document.getElementById("run").onclick = async () => { await fetch("/api/run", { method: "POST" }); refresh(); };
+async function runOne(file) { selected = file; await fetch(`/api/run/${encodeURIComponent(file)}`, { method: "POST" }); refresh(); }
+document.getElementById("reset").onclick = async () => {
+  const r = await fetch("/api/reset", { method: "POST" });
+  if (r.ok) { events = []; next = 0; }
+  refresh();
+};
+refresh();
+setInterval(refresh, 600);
+</script>
+</body>
+</html>
